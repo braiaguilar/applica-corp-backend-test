@@ -8,6 +8,6 @@ exports.fetchCommentsByPostId = async postId => {
         const postComments = response.data;
         return postComments;
     } catch (error) {
-        throw new Error('Error fetching posts');
+        throw new Error('Error fetching comments');
     }
 };
