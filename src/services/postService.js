@@ -1,6 +1,6 @@
 const axios = require('axios');
-const commentController = require('../controllers/commentController');
-const userController = require('../controllers/userController');
+const userService = require('./userService');
+const commentService = require('./commentService');
 
 exports.fetchPostsWithPagination = async (start, size) => {
     try {
@@ -10,13 +10,15 @@ exports.fetchPostsWithPagination = async (start, size) => {
         const allPosts = response.data;
         const paginatedPosts = allPosts.slice(start, start + size);
 
-        const postsWithCommentsAndUser = paginatedPosts.map(async post => {
-            const user = await userController.getUser(post.userId);
-            const comments = await commentController.getCommentsByPostId(
-                post.id
-            );
-            return { ...post, user, comments };
-        });
+        const postsWithCommentsAndUser = await Promise.all(
+            paginatedPosts.map(async post => {
+                const [user, comments] = await Promise.all([
+                    userService.fetchUserById(post.userId),
+                    commentService.fetchCommentsByPostId(post.id),
+                ]);
+                return { ...post, user, comments };
+            })
+        );
 
         return postsWithCommentsAndUser;
     } catch (error) {
