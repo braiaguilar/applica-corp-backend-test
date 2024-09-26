@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const postRoutes = require('./routes/postRoutes');
+const { errorHandler } = require('./utils/errorHandler');
 const app = express();
 
 app.use(express.json());
@@ -8,16 +9,8 @@ app.use(express.json());
 //Routes
 app.use('/posts', postRoutes);
 
-// Middleware for 404 errors
-app.use((req, res, next) => {
-    res.status(404).json({ message: 'Not Found' });
-});
-
-// Middleware for general errors
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: err.message });
-});
+// Middleware error handler
+app.use(errorHandler);
 
 // Server start
 const PORT = process.env.PORT || 3000;

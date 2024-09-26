@@ -2,6 +2,10 @@ const axios = require('axios');
 const NodeCache = require('node-cache');
 const userService = require('./userService');
 const commentService = require('./commentService');
+const {
+    InvalidPaginationError,
+    ExternalApiError,
+} = require('../utils/errorHandler');
 
 const userCache = new NodeCache({ stdTTL: 0 }); // "The blog site has a defined list of authors"
 const commentCache = new NodeCache({ stdTTL: 600 }); // 10 mins. A reasonable TTL for comments that could potentially change
@@ -10,12 +14,12 @@ const postCache = new NodeCache({ stdTTL: 600 }); // 10 mins for posts. Same cas
 exports.fetchPostsWithPagination = async (start, size) => {
     try {
         if (!Number.isInteger(start) || start < 0) {
-            throw new Error(
+            throw new InvalidPaginationError(
                 'Invalid start parameter. It must be a positive number.'
             );
         }
         if (!Number.isInteger(size) || size <= 0) {
-            throw new Error(
+            throw new InvalidPaginationError(
                 'Invalid size parameter. It must be a positive number greater than 0'
             );
         }
@@ -27,19 +31,21 @@ exports.fetchPostsWithPagination = async (start, size) => {
                     'https://jsonplaceholder.typicode.com/posts'
                 );
                 if (!response.data || response.status !== 200) {
-                    throw new Error('Error fetching posts');
+                    throw new ExternalApiError('Error fetching posts');
                 }
                 allPosts = response.data;
                 postCache.set('allPosts', allPosts);
             } catch (error) {
                 console.error('API Error:', error.message);
-                throw new Error('Failed to retrieve posts from external API');
+                throw new ExternalApiError(
+                    'Failed to retrieve posts from external API'
+                );
             }
         }
         const postsQuantity = allPosts.length;
 
         if (start >= postsQuantity) {
-            throw new Error(
+            throw new InvalidPaginationError(
                 `Invalid start parameter. There are ${postsQuantity} posts available, which means the max start value must be ${
                     postsQuantity - 1
                 }`

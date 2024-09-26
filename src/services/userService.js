@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { ExternalApiError } = require('../utils/errorHandler');
 
 exports.fetchUserById = async userId => {
     try {
@@ -6,13 +7,13 @@ exports.fetchUserById = async userId => {
             `https://jsonplaceholder.typicode.com/users/${userId}`
         );
         if (!response.data || response.status !== 200) {
-            throw new Error('Error fetching user');
+            throw new ExternalApiError('Error fetching user');
         }
         const user = response.data;
         return user;
     } catch (error) {
         console.error('API Error:', error.message);
-        throw new Error('Failed to retrieve user from external API');
+        throw new ExternalApiError('Failed to retrieve user from external API');
     }
 };
 
@@ -22,12 +23,12 @@ exports.fetchAllUsers = async () => {
             `https://jsonplaceholder.typicode.com/users`
         );
         if (!response.data || response.status !== 200) {
-            throw new Error('Error fetching users');
+            throw new ExternalApiError('Error fetching users');
         }
         const users = response.data;
         return users;
     } catch (error) {
         console.error('API Error:', error.message);
-        throw new Error('Failed to retrieve users from external API');
+        throw new ExternalApiError('Failed to retrieve users from external API');
     }
 };
