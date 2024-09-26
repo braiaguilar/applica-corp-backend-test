@@ -9,21 +9,15 @@ exports.fetchPostsWithPagination = async (start, size) => {
         );
         const allPosts = response.data;
         const paginatedPosts = allPosts.slice(start, start + size);
-        const postsWithCommentsAndUser = [];
 
-        for (let post in paginatedPosts) {
-            const postComments = await commentController.getComments(
-                paginatedPosts[post].id
+        const postsWithCommentsAndUser = paginatedPosts.map(async post => {
+            const user = await userController.getUser(post.userId);
+            const comments = await commentController.getCommentsByPostId(
+                post.id
             );
-            const user = await userController.getUser(
-                paginatedPosts[post].userId
-            );
-            postsWithCommentsAndUser.push({
-                ...paginatedPosts[post],
-                user: user,
-                comments: postComments,
-            });
-        }
+            return { ...post, user, comments };
+        });
+
         return postsWithCommentsAndUser;
     } catch (error) {
         throw new Error('Error fetching posts');

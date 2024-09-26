@@ -1,6 +1,6 @@
 const commentService = require('../services/commentService');
 
-exports.getComments = async (postId, next) => {
+exports.getCommentsByPostId = async (postId, next) => {
     try {
         const comments = await commentService.fetchCommentsByPostId(postId);
         return comments;

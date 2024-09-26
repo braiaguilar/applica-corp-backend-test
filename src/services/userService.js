@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-exports.fetchUser = async userId => {
+exports.fetchUserById = async userId => {
     try {
         const response = await axios.get(
             `https://jsonplaceholder.typicode.com/users/${userId}`
