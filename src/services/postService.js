@@ -5,6 +5,7 @@ const { userCache, commentCache, postCache } = require('../utils/cache');
 const {
     InvalidPaginationError,
     ExternalApiError,
+    NotFoundError,
 } = require('../utils/errorHandler');
 
 exports.fetchPostsWithPagination = async (start, size) => {
@@ -38,15 +39,13 @@ exports.fetchPostsWithPagination = async (start, size) => {
                 );
             }
         }
-        const postsQuantity = allPosts.length;
+        // const postsQuantity = allPosts.length;
 
-        if (start >= postsQuantity) {
-            throw new InvalidPaginationError(
-                `Invalid start parameter. There are ${postsQuantity} posts available, which means the max start value must be ${
-                    postsQuantity - 1
-                }`
-            );
-        }
+        // if (start >= postsQuantity) {
+        //     throw new InvalidPaginationError(
+        //         'Invalid start parameter. Start index exceeds the number of available posts'
+        //     );
+        // }
 
         const paginatedPosts = allPosts.slice(start, start + size);
 
@@ -71,6 +70,10 @@ exports.fetchPostsWithPagination = async (start, size) => {
                 return { ...post, user, comments };
             })
         );
+
+        if (!postsWithCommentsAndUser.length) {
+            throw new NotFoundError('No posts found');
+        }
 
         return postsWithCommentsAndUser;
     } catch (error) {
