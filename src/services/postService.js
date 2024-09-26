@@ -1,4 +1,5 @@
 const axios = require('axios');
+const commentController = require('../controllers/commentController');
 
 exports.fetchPostsWithPagination = async (start, size) => {
     try {
@@ -7,7 +8,18 @@ exports.fetchPostsWithPagination = async (start, size) => {
         );
         const allPosts = response.data;
         const paginatedPosts = allPosts.slice(start, start + size);
-        return paginatedPosts;
+        const postsWithComments = [];
+
+        for (let post in paginatedPosts) {
+            const postComments = await commentController.getComments(
+                paginatedPosts[post].id
+            );
+            postsWithComments.push({
+                ...paginatedPosts[post],
+                comments: postComments,
+            });
+        }
+        return postsWithComments;
     } catch (error) {
         throw new Error('Error fetching posts');
     }
