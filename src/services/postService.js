@@ -1,15 +1,11 @@
 const axios = require('axios');
-const NodeCache = require('node-cache');
 const userService = require('./userService');
 const commentService = require('./commentService');
+const { userCache, commentCache, postCache } = require('../utils/cache');
 const {
     InvalidPaginationError,
     ExternalApiError,
 } = require('../utils/errorHandler');
-
-const userCache = new NodeCache({ stdTTL: 0 }); // "The blog site has a defined list of authors"
-const commentCache = new NodeCache({ stdTTL: 600 }); // 10 mins. A reasonable TTL for comments that could potentially change
-const postCache = new NodeCache({ stdTTL: 600 }); // 10 mins for posts. Same case as comments
 
 exports.fetchPostsWithPagination = async (start, size) => {
     try {
