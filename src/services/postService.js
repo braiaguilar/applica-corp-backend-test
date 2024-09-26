@@ -9,13 +9,41 @@ const postCache = new NodeCache({ stdTTL: 600 }); // 10 mins for posts. Same cas
 
 exports.fetchPostsWithPagination = async (start, size) => {
     try {
+        if (!Number.isInteger(start) || start < 0) {
+            throw new Error(
+                'Invalid start parameter. It must be a positive number.'
+            );
+        }
+        if (!Number.isInteger(size) || size <= 0) {
+            throw new Error(
+                'Invalid size parameter. It must be a positive number greater than 0'
+            );
+        }
+
         let allPosts = postCache.get('allPosts');
         if (!allPosts) {
-            const response = await axios.get(
-                'https://jsonplaceholder.typicode.com/posts'
+            try {
+                const response = await axios.get(
+                    'https://jsonplaceholder.typicode.com/posts'
+                );
+                if (!response.data || response.status !== 200) {
+                    throw new Error('Error fetching posts');
+                }
+                allPosts = response.data;
+                postCache.set('allPosts', allPosts);
+            } catch (error) {
+                console.error('API Error:', error.message);
+                throw new Error('Failed to retrieve posts from external API');
+            }
+        }
+        const postsQuantity = allPosts.length;
+
+        if (start >= postsQuantity) {
+            throw new Error(
+                `Invalid start parameter. There are ${postsQuantity} posts available, which means the max start value must be ${
+                    postsQuantity - 1
+                }`
             );
-            allPosts = response.data;
-            postCache.set('allPosts', allPosts);
         }
 
         const paginatedPosts = allPosts.slice(start, start + size);
@@ -44,6 +72,6 @@ exports.fetchPostsWithPagination = async (start, size) => {
 
         return postsWithCommentsAndUser;
     } catch (error) {
-        throw new Error('Error fetching posts');
+        throw new Error(error.message);
     }
 };

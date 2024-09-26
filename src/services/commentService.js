@@ -5,9 +5,13 @@ exports.fetchCommentsByPostId = async postId => {
         const response = await axios.get(
             `https://jsonplaceholder.typicode.com/posts/${postId}/comments`
         );
+        if (!response.data || response.status !== 200) {
+            throw new Error('Error fetching comments');
+        }
         const postComments = response.data;
         return postComments;
     } catch (error) {
-        throw new Error('Error fetching comments');
+        console.error('API Error:', error.message);
+        throw new Error('Failed to retrieve comments from external API');
     }
 };
